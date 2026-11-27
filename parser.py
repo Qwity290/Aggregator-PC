@@ -29,11 +29,13 @@ def fetch_html(target_url, enc="utf-8", tout=12):
 
 def parse_by_shop(shop, html, floor):
     if shop == "Онлайн Трейд":
-        raw = re.findall(r'class="price[^"]*"[^>]*>\s*([\d\s\u00a0]{4,9})', html)[:6]
+        raw = re.findall(r'indexGoods__item__price[^>]*>.*?([\d\s\u00a0]{4,9})', html, re.S)[:6]
+        if not raw:
+            raw = re.findall(r'([\d]{2,3}[\s\u00a0][\d]{3})\s*(?:₽|&#8381;)', html)[:6]
     elif shop == "Яндекс Маркет":
         raw = re.findall(r'(?:snippet-price-current|"value"|"price")\s*[:=>"\s]+(\d{4,6})', html)[:5]
     elif shop in ("DNS", "Ozon"):
-        raw = re.findall(r'(\d{2,3}[\s\u00a0]\d{3})\s*(?:₽|руб)', html)[:6]
+        raw = re.findall(r'(\d{2,3}[\s\u00a0]\d{3})\s*(?:₽|руб)', html)[:8]
     else:
         return []
     nums = [int(re.sub(r"\D", "", x)) for x in raw if re.sub(r"\D", "", x)]
@@ -43,12 +45,12 @@ def check_shop_price(shop, word, ref=0):
     s, q = chr(47), chr(63)
     enc = urllib.parse.quote(word)
     oz_q = urllib.parse.quote(f"site:ozon.ru {word} цена")
-    dns_q = urllib.parse.quote(f"site:dns-shop.ru {word} купить")
+    dns_q = urllib.parse.quote(f"site:dns-shop.ru {word} цена")
     routes = {
         "Онлайн Трейд": ("https:" + s + s + "www.onlinetrade.ru" + s + "sitesearch.html" + q + "query=" + enc, "windows-1251"),
         "Яндекс Маркет": ("https:" + s + s + "market.yandex.ru" + s + "search" + q + "text=" + enc, "utf-8"),
-        "Ozon": ("https:" + s + s + "://google.com" + s + "search" + q + "q=" + oz_q + "&hl=ru", "utf-8"),
-        "DNS": ("https:" + s + s + "://google.com" + s + "search" + q + "q=" + dns_q + "&hl=ru", "utf-8"),
+        "Ozon": ("https:" + s + s + "yandex.ru" + s + "search" + s + q + "text=" + oz_q, "utf-8"),
+        "DNS": ("https:" + s + s + "yandex.ru" + s + "search" + s + q + "text=" + dns_q, "utf-8"),
     }
     if shop not in routes:
         return None, None
