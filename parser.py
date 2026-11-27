@@ -18,43 +18,50 @@ def get_floor(word, ref):
             return v
     return max(int(ref * 0.7), 4000) if ref > 4000 else 4000
 
-def fetch_html(target_url, enc="utf-8", tout=15):
+def fetch_html(target_url, enc="utf-8", tout=18):
     if not API_KEY:
         return ""
     s, q = chr(47), chr(63)
     api = "https:" + s + s + "api." + "scraperapi.com" + s + q
-    qs = urllib.parse.urlencode({"api_key": API_KEY, "url": target_url})
-    with urllib.request.urlopen(urllib.request.Request(api + qs), timeout=tout) as r:
+    qs = urllib.parse.urlencode({"api_key": API_KEY, "url": target_url, "keep_headers": "true"})
+    req = urllib.request.Request(api + qs, headers={"User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64)"})
+    with urllib.request.urlopen(req, timeout=tout) as r:
         return r.read().decode(enc, errors="ignore")
 
 def parse_by_shop(shop, html, floor):
-    if shop == "Яндекс Маркет":
+    if shop == "Онлайн Трейд":
+        # Ищем цены в карточках каталога Онлайн Трейд
+        raw = re.findall(r'class="price[^"]*"[^>]*>\s*([\d\s\u00a0]{4,9})', html)[:8]
+        if not raw:
+            raw = re.findall(r'(\d{2,3}[\s\u00a0]\d{3})\s*(?:₽|&#8381;)', html)[:8]
+    elif shop == "Яндекс Маркет":
         raw = re.findall(r'(?:snippet-price-current|"value"|"price")\s*[:=>"\s]+(\d{4,6})', html)[:5]
     else:
-        # Ищем цены в рублях из сниппетов DuckDuckGo для Ozon, DNS и Онлайн Трейд
-        raw = re.findall(r'(\d{2,3}[\s\u00a0]\d{3})\s*(?:₽|руб|р\.)', html)[:10]
+        return []
     nums = [int(re.sub(r"\D", "", x)) for x in raw if re.sub(r"\D", "", x)]
     return [n for n in nums if floor <= n <= 350000]
 
 def check_shop_price(shop, word, ref=0):
     s, q = chr(47), chr(63)
-    domains = {"Ozon": "ozon.ru", "DNS": "dns-shop.ru", "Онлайн Трейд": "onlinetrade.ru"}
+    enc = urllib.parse.quote(word)
     if shop == "Яндекс Маркет":
-        # Добавляем категорию, чтобы не цеплять готовые ПК в сборе
         prefix = "процессор " if "ryzen" in word.lower() else ("видеокарта " if any(x in word.lower() for x in ["rtx", "rx"]) else "")
         url = "https:" + s + s + "market.yandex.ru" + s + "search" + q + "text=" + urllib.parse.quote(prefix + word)
-    elif shop in domains:
-        ddg_q = urllib.parse.quote(f"site:{domains[shop]} {word} цена руб")
-        url = "https:" + s + s + "://duckduckgo.com" + s + "html" + s + q + "q=" + ddg_q
+        charset = "utf-8"
+    elif shop == "Онлайн Трейд":
+        url = "https:" + s + s + "www.onlinetrade.ru" + s + "sitesearch.html" + q + "query=" + enc + "&cat_id=0"
+        charset = "windows-1251"
     else:
         return None, None
     try:
-        html = fetch_html(url, "utf-8", 15)
-        if len(html) < 1000 or "smartcaptcha" in html.lower():
+        html = fetch_html(url, charset, 18)
+        if len(html) < 1500 or "smartcaptcha" in html.lower():
             return None, None
         prices = parse_by_shop(shop, html, get_floor(word, ref))
         if prices:
             return min(prices), True
+        title = re.findall(r"<title>(.*?)</title>", html, re.S)
+        print(f" [DEBUG] {shop} ({word}) 0 цен, title: {title[:1]}", flush=True)
     except Exception as e:
         print(f" [DEBUG] {shop} ({word}): {e}", flush=True)
     return None, None
