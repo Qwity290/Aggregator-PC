@@ -1,5 +1,5 @@
 {
-  "updated_at": "27.11.2026 13:33 МСК",
+  "updated_at": "27.11.2026 13:41 МСК",
   "products": [
     {
       "name": "Видеокарта MSI GeForce RTX 3060 VENTUS 2X OC 12GB",
@@ -40,7 +40,7 @@
       "name": "Видеокарта MSI GeForce RTX 4060 GAMING 8G",
       "searchWord": "RTX 4060",
       "shop": "Яндекс Маркет",
-      "price": 9979,
+      "price": 35481,
       "inStock": true
     },
     {
@@ -124,7 +124,7 @@
       "name": "Видеокарта MSI GeForce RTX 4080 SUPER VENTUS 3X",
       "searchWord": "RTX 4080 SUPER",
       "shop": "Яндекс Маркет",
-      "price": 109500,
+      "price": 81894,
       "inStock": true
     },
     {
@@ -208,7 +208,7 @@
       "name": "Видеокарта Palit GeForce RTX 5080 GamingPro 16GB",
       "searchWord": "RTX 5080",
       "shop": "Яндекс Маркет",
-      "price": 124500,
+      "price": 245520,
       "inStock": true
     },
     {
@@ -292,7 +292,7 @@
       "name": "Видеокарта ASRock Radeon RX 7800 XT Steel Legend",
       "searchWord": "RX 7800 XT",
       "shop": "Яндекс Маркет",
-      "price": 3734,
+      "price": 24878,
       "inStock": true
     },
     {
@@ -404,7 +404,7 @@
       "name": "Процессор AMD Ryzen 5 7500F AM5 OEM",
       "searchWord": "Ryzen 5 7500F",
       "shop": "Яндекс Маркет",
-      "price": 9745,
+      "price": 11010,
       "inStock": true
     },
     {
@@ -432,7 +432,7 @@
       "name": "Процессор AMD Ryzen 7 7800X3D OEM",
       "searchWord": "Ryzen 7 7800X3D",
       "shop": "Яндекс Маркет",
-      "price": 14627,
+      "price": 25250,
       "inStock": true
     },
     {
@@ -488,7 +488,7 @@
       "name": "Оперативная память Foxline 32GB DDR5-5600",
       "searchWord": "DDR5 32GB",
       "shop": "Яндекс Маркет",
-      "price": 3920,
+      "price": 36154,
       "inStock": true
     },
     {
