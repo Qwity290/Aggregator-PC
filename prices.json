@@ -1,14 +1,61 @@
 {
-  "updated_at": "27.11.2026 12:15",
+  "updated_at": "27.11.2026 12:20 МСК",
   "products": [
-    { "name": "Видеокарта MSI GeForce RTX 4060 VENTUS 2X 8GB", "searchWord": "RTX 4060", "shop": "DNS", "price": 0, "inStock": false },
-    { "name": "Видеокарта MSI GeForce RTX 4060 GAMING 8G", "searchWord": "RTX 4060", "shop": "Яндекс Маркет", "price": 31200, "inStock": true },
-    { "name": "Видеокарта Gigabyte GeForce RTX 4060 GAMING OC 8G", "searchWord": "RTX 4060", "shop": "Ozon", "price": 33315, "inStock": true },
-    { "name": "Видеокарта MSI GeForce RTX 4060 VENTUS 2X BLACK", "searchWord": "RTX 4060", "shop": "Онлайн Трейд", "price": 34500, "inStock": true },
-
-    { "name": "Процессор AMD Ryzen 5 7500F OEM (AM5)", "searchWord": "Ryzen 5 7500F", "shop": "DNS", "price": 18499, "inStock": true },
-    { "name": "Процессор AMD Ryzen 5 7500F AM5 OEM", "searchWord": "Ryzen 5 7500F", "shop": "Яндекс Маркет", "price": 14731, "inStock": true },
-    { "name": "Процессор AMD Ryzen 5 7500F AM5 OEM", "searchWord": "Ryzen 5 7500F", "shop": "Ozon", "price": 12671, "inStock": true },
-    { "name": "Процессор AMD Ryzen 5 7500F AM5 OEM", "searchWord": "Ryzen 5 7500F", "shop": "Онлайн Трейд", "price": 17246, "inStock": true }
+    {
+      "name": "Видеокарта MSI GeForce RTX 4060 VENTUS 2X 8GB",
+      "searchWord": "RTX 4060",
+      "shop": "DNS",
+      "price": 0,
+      "inStock": false
+    },
+    {
+      "name": "Видеокарта MSI GeForce RTX 4060 GAMING 8G",
+      "searchWord": "RTX 4060",
+      "shop": "Яндекс Маркет",
+      "price": 31200,
+      "inStock": true
+    },
+    {
+      "name": "Видеокарта Gigabyte GeForce RTX 4060 GAMING OC 8G",
+      "searchWord": "RTX 4060",
+      "shop": "Ozon",
+      "price": 33315,
+      "inStock": true
+    },
+    {
+      "name": "Видеокарта MSI GeForce RTX 4060 VENTUS 2X BLACK",
+      "searchWord": "RTX 4060",
+      "shop": "Онлайн Трейд",
+      "price": 34500,
+      "inStock": true
+    },
+    {
+      "name": "Процессор AMD Ryzen 5 7500F OEM (AM5)",
+      "searchWord": "Ryzen 5 7500F",
+      "shop": "DNS",
+      "price": 18499,
+      "inStock": true
+    },
+    {
+      "name": "Процессор AMD Ryzen 5 7500F AM5 OEM",
+      "searchWord": "Ryzen 5 7500F",
+      "shop": "Яндекс Маркет",
+      "price": 14731,
+      "inStock": true
+    },
+    {
+      "name": "Процессор AMD Ryzen 5 7500F AM5 OEM",
+      "searchWord": "Ryzen 5 7500F",
+      "shop": "Ozon",
+      "price": 12671,
+      "inStock": true
+    },
+    {
+      "name": "Процессор AMD Ryzen 5 7500F AM5 OEM",
+      "searchWord": "Ryzen 5 7500F",
+      "shop": "Онлайн Трейд",
+      "price": 17246,
+      "inStock": true
+    }
   ]
 }
