@@ -1,4 +1,5 @@
 import json
+import time
 import os
 import re
 import urllib.parse
@@ -20,7 +21,7 @@ def fetch_via_scraperapi(target_url):
     }
     api_url = f"https:{s}{s}api.scraperapi.com{s}{q}" + urllib.parse.urlencode(params)
     req = urllib.request.Request(api_url)
-    with urllib.request.urlopen(req, timeout=20) as response:
+    with urllib.request.urlopen(req, timeout=25) as response:
         return response.read().decode("utf-8", errors="ignore")
 
 def check_shop_price(shop, search_word, ref_price=0):
@@ -73,6 +74,7 @@ def process_task(task):
     shop, word, ref_price = task
     print(f"Проверяю {shop}: {word}...")
     new_price, in_stock = check_shop_price(shop, word, ref_price)
+    time.sleep(1.5)
     return (shop, word, new_price, in_stock)
 
 def main():
@@ -91,7 +93,7 @@ def main():
     ]
     cache = {}
 
-    with ThreadPoolExecutor(max_workers=5) as executor:
+    with ThreadPoolExecutor(max_workers=1) as executor:
         results = executor.map(process_task, unique_tasks)
         for shop, word, new_price, in_stock in results:
             cache[f"{shop}_{word}"] = (new_price, in_stock)
