@@ -7,87 +7,19 @@
 <style>
 body {
   font-family: 'Segoe UI', Tahoma, sans-serif;
-  background-color: #f4f6f9;
-  color: #333;
-  max-width: 850px;
-  margin: 40px auto;
-  padding: 0 20px;
-}
-h1 { text-align: center; color: #2c3e50; margin-bottom: 10px; }
-.subtitle { text-align: center; color: #7f8c8d; margin-bottom: 25px; }
-.search-box { display: flex; gap: 10px; margin-bottom: 15px; }
-input[type="text"] {
-  flex: 1; padding: 12px 15px; font-size: 16px;
-  border: 2px solid #ddd; border-radius: 8px; outline: none;
-}
-input[type="text"]:focus { border-color: #3498db; }
-button.search-btn {
-  padding: 12px 25px; font-size: 16px; background: #3498db;
-  color: white; border: none; border-radius: 8px; cursor: pointer; font-weight: bold;
-}
-button.search-btn:hover { background: #2980b9; }
-.quick-tags {
-  display: flex; flex-wrap: wrap; gap: 8px;
-  margin-bottom: 25px; align-items: center;
-}
-.quick-tags span { font-size: 13px; color: #7f8c8d; }
-.tag-btn {
-  background: #e1e8ed; color: #2c3e50; border: none;
-  padding: 5px 12px; border-radius: 15px; font-size: 13px; cursor: pointer;
-}
-.tag-btn:hover { background: #3498db; color: white; }
-
-.min-price-banner {
-  background: linear-gradient(135deg, #27ae60, #2ecc71);
-  color: white; padding: 16px 22px; border-radius: 10px; margin-bottom: 20px;
-  display: flex; justify-content: space-between; align-items: center;
-  box-shadow: 0 4px 10px rgba(39, 174, 96, 0.2);
-}
-.min-price-banner .big-price { font-size: 24px; font-weight: bold; }
-
-.card {
-  background: white; padding: 20px; margin-bottom: 15px;
-  border-radius: 10px; box-shadow: 0 2px 5px rgba(0,0,0,0.05);
-  display: flex; justify-content: space-between; align-items: center; gap: 15px;
-}
-.card.out-of-stock { background-color: #fafafa; opacity: 0.85; }
-.shop-badge {
-  display: inline-block; padding: 4px 10px; border-radius: 5px;
-  font-size: 12px; font-weight: bold; color: white; margin-bottom: 6px;
-}
-.DNS { background-color: #fc8507; }
-.Ozon { background-color: #005bff; }
-.Онлайн { background-color: #5c2d91; }
-.Яндекс { background-color: #fc3f1d; }
-
-.price { font-size: 22px; font-weight: bold; color: #27ae60; white-space: nowrap; }
-.no-stock-text { font-size: 17px; font-weight: bold; color: #e74c3c; white-space: nowrap; }
-.buy-btn {
-  display: inline-block; margin-top: 8px; padding: 8px 15px;
-  background: #ecf0f1; color: #2c3e50; text-decoration: none;
-  border-radius: 5px; font-size: 14px; white-space: nowrap;
-}
-.buy-btn:hover { background: #bdc3c7; }
-</style>
-</head>
-<body>
-
-<h1>Поиск цен на комплектующие ПК</h1>
-<div class="subtitle">Сравнение минимальных цен в DNS, Ozon, Яндекс Маркет и Онлайн Трейд</div>
-<!DOCTYPE html>
-<html lang="ru">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Агрегатор цен ПК</title>
-<style>
-body {
-  font-family: 'Segoe UI', Tahoma, sans-serif;
   background-color: #f4f6f9; color: #333;
   max-width: 850px; margin: 40px auto; padding: 0 20px;
 }
-h1 { text-align: center; color: #2c3e50; margin-bottom: 10px; }
-.subtitle { text-align: center; color: #7f8c8d; margin-bottom: 25px; }
+h1 { text-align: center; color: #2c3e50; margin-bottom: 8px; }
+.subtitle { text-align: center; color: #7f8c8d; margin-bottom: 12px; }
+.update-badge {
+  text-align: center; margin-bottom: 25px;
+}
+.update-badge span {
+  display: inline-block; background: #e8f8f5; color: #16a085;
+  padding: 5px 14px; border-radius: 20px; font-size: 13px;
+  font-weight: 500; border: 1px solid #a3e4d7;
+}
 .search-box { display: flex; gap: 10px; margin-bottom: 15px; }
 input[type="text"] {
   flex: 1; padding: 12px 15px; font-size: 16px;
@@ -140,6 +72,10 @@ button.search-btn:hover { background: #2980b9; }
 </head>
 <body>
 
+<h1>Поиск цен на комплектующие ПК</h1>
+<div class="subtitle">Сравнение минимальных цен в DNS, Ozon, Яндекс Маркет и Онлайн Трейд</div>
+<div class="update-badge"><span id="lastUpdateText">⏳ Загрузка актуальной базы цен...</span></div>
+
 <div class="search-box">
   <input type="text" id="searchInput" placeholder="Введите модель (например: RTX 4060, RTX 5070, RX 7800 XT, Ryzen 5)..." onkeyup="if(event.key === 'Enter') searchProducts()">
   <button class="search-btn" onclick="searchProducts()">Найти цены</button>
@@ -159,87 +95,32 @@ button.search-btn:hover { background: #2980b9; }
 <div id="resultsContainer"></div>
 
 <script>
-const productsDB = [
-  { name: "Видеокарта MSI GeForce RTX 3060 VENTUS 2X 12GB", searchWord: "RTX 3060 12GB", shop: "DNS", price: 29999, inStock: true },
-  { name: "Видеокарта Palit GeForce RTX 3060 Dual 12GB", searchWord: "RTX 3060 12GB", shop: "Яндекс Маркет", price: 27400, inStock: true },
-  { name: "Видеокарта KFA2 GeForce RTX 3060 CORE 12GB", searchWord: "RTX 3060 12GB", shop: "Ozon", price: 26850, inStock: true },
-  { name: "Видеокарта GIGABYTE GeForce RTX 3060 WINDFORCE 12G", searchWord: "RTX 3060 12GB", shop: "Онлайн Трейд", price: 28900, inStock: true },
-
+// Резервная база (на случай если prices.json еще не загрузился)
+let productsDB = [
   { name: "Видеокарта MSI GeForce RTX 4060 VENTUS 2X 8GB", searchWord: "RTX 4060", shop: "DNS", price: 0, inStock: false },
   { name: "Видеокарта MSI GeForce RTX 4060 GAMING 8G", searchWord: "RTX 4060", shop: "Яндекс Маркет", price: 31200, inStock: true },
   { name: "Видеокарта Gigabyte GeForce RTX 4060 GAMING OC 8G", searchWord: "RTX 4060", shop: "Ozon", price: 33315, inStock: true },
-  { name: "Видеокарта MSI GeForce RTX 4060 VENTUS 2X BLACK", searchWord: "RTX 4060", shop: "Онлайн Трейд", price: 34500, inStock: true },
-
-  { name: "Видеокарта Palit GeForce RTX 4060 Ti Dual 8GB", searchWord: "RTX 4060 Ti", shop: "DNS", price: 44999, inStock: true },
-  { name: "Видеокарта MSI GeForce RTX 4060 Ti VENTUS 2X 8G", searchWord: "RTX 4060 Ti", shop: "Яндекс Маркет", price: 41800, inStock: true },
-  { name: "Видеокарта Gigabyte GeForce RTX 4060 Ti EAGLE 8G", searchWord: "RTX 4060 Ti", shop: "Ozon", price: 40950, inStock: true },
-  { name: "Видеокарта PALIT GeForce RTX 4060 Ti Dual 8GB", searchWord: "RTX 4060 Ti", shop: "Онлайн Трейд", price: 43600, inStock: true },
-
-  { name: "Видеокарта Palit GeForce RTX 4070 SUPER Dual 12GB", searchWord: "RTX 4070 SUPER", shop: "DNS", price: 69999, inStock: true },
-  { name: "Видеокарта Gainward RTX 4070 SUPER Ghost 12GB", searchWord: "RTX 4070 SUPER", shop: "Яндекс Маркет", price: 64900, inStock: true },
-  { name: "Видеокарта Palit RTX 4070 SUPER Dual 12 ГБ", searchWord: "RTX 4070 SUPER", shop: "Ozon", price: 65800, inStock: true },
-  { name: "Видеокарта MSI GeForce RTX 4070 SUPER VENTUS 2X", searchWord: "RTX 4070 SUPER", shop: "Онлайн Трейд", price: 0, inStock: false },
-
-  { name: "Видеокарта Palit GeForce RTX 4080 SUPER JetStream", searchWord: "RTX 4080 SUPER", shop: "DNS", price: 118999, inStock: true },
-  { name: "Видеокарта MSI GeForce RTX 4080 SUPER VENTUS 3X", searchWord: "RTX 4080 SUPER", shop: "Яндекс Маркет", price: 109500, inStock: true },
-  { name: "Видеокарта Gigabyte GeForce RTX 4080 SUPER WINDFORCE", searchWord: "RTX 4080 SUPER", shop: "Ozon", price: 107900, inStock: true },
-  { name: "Видеокарта PALIT GeForce RTX 4080 SUPER GamingPro", searchWord: "RTX 4080 SUPER", shop: "Онлайн Трейд", price: 114500, inStock: true },
-
-  { name: "Видеокарта MSI GeForce RTX 4090 GAMING X SLIM 24GB", searchWord: "RTX 4090", shop: "DNS", price: 0, inStock: false },
-  { name: "Видеокарта Palit GeForce RTX 4090 GameRock 24GB", searchWord: "RTX 4090", shop: "Яндекс Маркет", price: 189900, inStock: true },
-  { name: "Видеокарта Gigabyte GeForce RTX 4090 WINDFORCE V2", searchWord: "RTX 4090", shop: "Ozon", price: 184500, inStock: true },
-  { name: "Видеокарта ASUS TUF Gaming GeForce RTX 4090 OC", searchWord: "RTX 4090", shop: "Онлайн Трейд", price: 196000, inStock: true },
-
-  { name: "Видеокарта Palit GeForce RTX 5070 GamingPro 12GB", searchWord: "RTX 5070", shop: "DNS", price: 78999, inStock: true },
-  { name: "Видеокарта MSI GeForce RTX 5070 VENTUS 2X OC 12G", searchWord: "RTX 5070", shop: "Яндекс Маркет", price: 73500, inStock: true },
-  { name: "Видеокарта Gigabyte GeForce RTX 5070 WINDFORCE 12G", searchWord: "RTX 5070", shop: "Ozon", price: 71900, inStock: true },
-  { name: "Видеокарта PALIT GeForce RTX 5070 Infinity 3 12G", searchWord: "RTX 5070", shop: "Онлайн Трейд", price: 76400, inStock: true },
-
-  { name: "Видеокарта MSI GeForce RTX 5080 VENTUS 3X OC 16GB", searchWord: "RTX 5080", shop: "DNS", price: 134999, inStock: true },
-  { name: "Видеокарта Palit GeForce RTX 5080 GamingPro 16GB", searchWord: "RTX 5080", shop: "Яндекс Маркет", price: 124500, inStock: true },
-  { name: "Видеокарта Gigabyte GeForce RTX 5080 GAMING OC 16G", searchWord: "RTX 5080", shop: "Ozon", price: 121900, inStock: true },
-  { name: "Видеокарта PALIT GeForce RTX 5080 GameRock 16G", searchWord: "RTX 5080", shop: "Онлайн Трейд", price: 129900, inStock: true },
-
-  { name: "Видеокарта ASUS ROG Astral GeForce RTX 5090 32GB", searchWord: "RTX 5090", shop: "DNS", price: 0, inStock: false },
-  { name: "Видеокарта MSI GeForce RTX 5090 SUPRIM SOC 32GB", searchWord: "RTX 5090", shop: "Яндекс Маркет", price: 249000, inStock: true },
-  { name: "Видеокарта Palit GeForce RTX 5090 GameRock 32GB", searchWord: "RTX 5090", shop: "Ozon", price: 238500, inStock: true },
-  { name: "Видеокарта GIGABYTE GeForce RTX 5090 WINDFORCE 32G", searchWord: "RTX 5090", shop: "Онлайн Трейд", price: 0, inStock: false },
-
-  { name: "Видеокарта Sapphire AMD Radeon RX 7600 PULSE 8GB", searchWord: "RX 7600", shop: "DNS", price: 31499, inStock: true },
-  { name: "Видеокарта ASRock Radeon RX 7600 Challenger 8GB", searchWord: "RX 7600", shop: "Яндекс Маркет", price: 28900, inStock: true },
-  { name: "Видеокарта Sapphire PULSE Radeon RX 7600 8 ГБ", searchWord: "RX 7600", shop: "Ozon", price: 0, inStock: false },
-  { name: "Видеокарта SAPPHIRE PULSE Radeon RX 7600 8G", searchWord: "RX 7600", shop: "Онлайн Трейд", price: 30400, inStock: true },
-
-  { name: "Видеокарта Sapphire AMD Radeon RX 7800 XT NITRO+", searchWord: "RX 7800 XT", shop: "DNS", price: 59999, inStock: true },
-  { name: "Видеокарта ASRock Radeon RX 7800 XT Steel Legend", searchWord: "RX 7800 XT", shop: "Яндекс Маркет", price: 55400, inStock: true },
-  { name: "Видеокарта PowerColor Hellhound RX 7800 XT 16GB", searchWord: "RX 7800 XT", shop: "Ozon", price: 54900, inStock: true },
-  { name: "Видеокарта SAPPHIRE PULSE Radeon RX 7800 XT 16G", searchWord: "RX 7800 XT", shop: "Онлайн Трейд", price: 0, inStock: false },
-
-  { name: "Процессор AMD Ryzen 5 5600 OEM (AM4)", searchWord: "Ryzen 5 5600", shop: "DNS", price: 12999, inStock: true },
-  { name: "Процессор AMD Ryzen 5 5600 AM4 OEM", searchWord: "Ryzen 5 5600", shop: "Яндекс Маркет", price: 11630, inStock: true },
-  { name: "Процессор AMD Ryzen 5 5600 AM4 OEM", searchWord: "Ryzen 5 5600", shop: "Ozon", price: 10790, inStock: true },
-  { name: "Процессор AMD Ryzen 5 5600 AM4 OEM", searchWord: "Ryzen 5 5600", shop: "Онлайн Трейд", price: 12190, inStock: true },
-
-  { name: "Процессор AMD Ryzen 5 7500F OEM (AM5)", searchWord: "Ryzen 5 7500F", shop: "DNS", price: 18499, inStock: true },
-  { name: "Процессор AMD Ryzen 5 7500F AM5 OEM", searchWord: "Ryzen 5 7500F", shop: "Яндекс Маркет", price: 14731, inStock: true },
-  { name: "Процессор AMD Ryzen 5 7500F AM5 OEM", searchWord: "Ryzen 5 7500F", shop: "Ozon", price: 12671, inStock: true },
-  { name: "Процессор AMD Ryzen 5 7500F AM5 OEM", searchWord: "Ryzen 5 7500F", shop: "Онлайн Трейд", price: 17246, inStock: true },
-
-  { name: "Процессор AMD Ryzen 7 7800X3D OEM (AM5)", searchWord: "Ryzen 7 7800X3D", shop: "DNS", price: 0, inStock: false },
-  { name: "Процессор AMD Ryzen 7 7800X3D OEM", searchWord: "Ryzen 7 7800X3D", shop: "Яндекс Маркет", price: 38106, inStock: true },
-  { name: "Процессор AMD Ryzen 7 7800X3D OEM", searchWord: "Ryzen 7 7800X3D", shop: "Ozon", price: 27534, inStock: true },
-  { name: "Процессор AMD Ryzen 7 7800X3D AM5 OEM", searchWord: "Ryzen 7 7800X3D", shop: "Онлайн Трейд", price: 41900, inStock: true },
-
-  { name: "Процессор AMD Ryzen 7 9700X OEM (AM5)", searchWord: "Ryzen 7 9700X", shop: "DNS", price: 37999, inStock: true },
-  { name: "Процессор AMD Ryzen 7 9700X AM5 OEM", searchWord: "Ryzen 7 9700X", shop: "Яндекс Маркет", price: 33400, inStock: true },
-  { name: "Процессор AMD Ryzen 7 9700X AM5 OEM", searchWord: "Ryzen 7 9700X", shop: "Ozon", price: 31900, inStock: true },
-  { name: "Процессор AMD Ryzen 7 9700X AM5 OEM", searchWord: "Ryzen 7 9700X", shop: "Онлайн Трейд", price: 36200, inStock: true },
-
-  { name: "Оперативная память Kingston FURY Beast 32 ГБ DDR5", searchWord: "DDR5 32GB", shop: "DNS", price: 0, inStock: false },
-  { name: "Оперативная память Foxline 32GB DDR5-5600", searchWord: "DDR5 32GB", shop: "Яндекс Маркет", price: 35789, inStock: true },
-  { name: "Оперативная память Digma 32 ГБ DDR5-5200", searchWord: "DDR5 32GB", shop: "Ozon", price: 42490, inStock: true },
-  { name: "Оперативная память Kingston FURY Beast 32Gb DDR5", searchWord: "DDR5 32GB", shop: "Онлайн Трейд", price: 45900, inStock: true }
+  { name: "Видеокарта MSI GeForce RTX 4060 VENTUS 2X BLACK", searchWord: "RTX 4060", shop: "Онлайн Трейд", price: 34500, inStock: true }
 ];
+
+// Подгружаем свежие данные от робота из файла prices.json
+async function loadLivePrices() {
+  try {
+    const response = await fetch("prices.json?t=" + Date.now());
+    if (response.ok) {
+      const data = await response.json();
+      if (data.products && data.products.length > 0) {
+        productsDB = data.products;
+      }
+      if (data.updated_at) {
+        document.getElementById("lastUpdateText").innerText = "🤖 Цены проверены роботом: " + data.updated_at;
+      }
+    }
+  } catch (e) {
+    document.getElementById("lastUpdateText").innerText = "⚡ Используется локальная база цен";
+  }
+}
+loadLivePrices();
 
 function quickSearch(text) {
   document.getElementById("searchInput").value = text;
