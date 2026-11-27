@@ -1,5 +1,5 @@
 {
-  "updated_at": "27.11.2026 15:24 МСК",
+  "updated_at": "27.11.2026 15:33 МСК",
   "products": [
     {
       "name": "Видеокарта MSI GeForce RTX 3060 VENTUS 2X OC 12GB",
@@ -40,7 +40,7 @@
       "name": "Видеокарта MSI GeForce RTX 4060 GAMING 8G",
       "searchWord": "RTX 4060",
       "shop": "Яндекс Маркет",
-      "price": 47074,
+      "price": 35481,
       "inStock": true
     },
     {
@@ -460,7 +460,7 @@
       "name": "Процессор AMD Ryzen 7 9700X AM5 OEM",
       "searchWord": "Ryzen 7 9700X",
       "shop": "Яндекс Маркет",
-      "price": 30361,
+      "price": 30217,
       "inStock": true
     },
     {
