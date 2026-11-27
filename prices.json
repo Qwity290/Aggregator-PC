@@ -1,5 +1,5 @@
 {
-  "updated_at": "27.11.2026 15:02 МСК",
+  "updated_at": "27.11.2026 15:14 МСК",
   "products": [
     {
       "name": "Видеокарта MSI GeForce RTX 3060 VENTUS 2X OC 12GB",
@@ -68,7 +68,7 @@
       "name": "Видеокарта MSI GeForce RTX 4060 Ti VENTUS 2X 8G",
       "searchWord": "RTX 4060 Ti",
       "shop": "Яндекс Маркет",
-      "price": 75251,
+      "price": 53378,
       "inStock": true
     },
     {
@@ -96,7 +96,7 @@
       "name": "Видеокарта Gainward RTX 4070 SUPER Ghost 12GB",
       "searchWord": "RTX 4070 SUPER",
       "shop": "Яндекс Маркет",
-      "price": 74970,
+      "price": 123754,
       "inStock": true
     },
     {
@@ -124,7 +124,7 @@
       "name": "Видеокарта MSI GeForce RTX 4080 SUPER VENTUS 3X",
       "searchWord": "RTX 4080 SUPER",
       "shop": "Яндекс Маркет",
-      "price": 125418,
+      "price": 124100,
       "inStock": true
     },
     {
@@ -180,7 +180,7 @@
       "name": "Видеокарта MSI GeForce RTX 5070 VENTUS 2X OC 12G",
       "searchWord": "RTX 5070",
       "shop": "Яндекс Маркет",
-      "price": 124380,
+      "price": 124100,
       "inStock": true
     },
     {
@@ -432,7 +432,7 @@
       "name": "Процессор AMD Ryzen 7 7800X3D OEM",
       "searchWord": "Ryzen 7 7800X3D",
       "shop": "Яндекс Маркет",
-      "price": 265650,
+      "price": 87758,
       "inStock": true
     },
     {
@@ -460,7 +460,7 @@
       "name": "Процессор AMD Ryzen 7 9700X AM5 OEM",
       "searchWord": "Ryzen 7 9700X",
       "shop": "Яндекс Маркет",
-      "price": 30187,
+      "price": 30361,
       "inStock": true
     },
     {
