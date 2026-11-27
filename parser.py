@@ -19,7 +19,7 @@ def fetch_via_scraperapi(target_url):
     }
     api_url = f"https:{s}{s}api.scraperapi.com{s}{q}" + urllib.parse.urlencode(params)
     req = urllib.request.Request(api_url)
-    with urllib.request.urlopen(req, timeout=45) as response:
+    with urllib.request.urlopen(req, timeout=20) as response:
         return response.read().decode("utf-8", errors="ignore")
 
 def check_shop_price(shop, search_word):
@@ -63,30 +63,34 @@ def check_shop_price(shop, search_word):
 
     return None, None
 
+from concurrent.futures import ThreadPoolExecutor
+
+def process_task(task):
+    shop, word = task
+    print(f"Проверяю {shop}: {word}...")
+    new_price, in_stock = check_shop_price(shop, word)
+    return (shop, word, new_price, in_stock)
+
 def main():
     with open("prices.json", "r", encoding="utf-8") as f:
         data = json.load(f)
 
+    unique_tasks = list(set((item["shop"], item["searchWord"]) for item in data["products"]))
     cache = {}
 
+    with ThreadPoolExecutor(max_workers=5) as executor:
+        results = executor.map(process_task, unique_tasks)
+        for shop, word, new_price, in_stock in results:
+            cache[f"{shop}_{word}"] = (new_price, in_stock)
+            if new_price is not None:
+                print(f" -> Успех {shop} ({word}): {new_price} ₽")
+
     for item in data["products"]:
-        shop = item["shop"]
-        word = item["searchWord"]
-        cache_key = f"{shop}_{word}"
-
-        if cache_key in cache:
-            new_price, in_stock = cache[cache_key]
-        else:
-            print(f"Проверяю {shop}: {word}...")
-            new_price, in_stock = check_shop_price(shop, word)
-            cache[cache_key] = (new_price, in_stock)
-
+        key = f"{item['shop']}_{item['searchWord']}"
+        new_price, in_stock = cache.get(key, (None, None))
         if new_price is not None:
             item["price"] = new_price
             item["inStock"] = in_stock
-            print(f" -> Успех: {new_price} ₽ (в наличии: {in_stock})")
-        else:
-            print(f" -> Оставлена резервная цена: {item['price']} ₽")
 
     msk_tz = timezone(timedelta(hours=3))
     data["updated_at"] = datetime.now(msk_tz).strftime("%d.%m.%Y %H:%M МСК")
