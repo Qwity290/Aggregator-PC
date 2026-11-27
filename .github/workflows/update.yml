@@ -2,8 +2,8 @@ name: Auto Update PC Prices
 
 on:
   schedule:
-    - cron: '0 */6 * * *' # Автоматический запуск каждые 6 часов
-  workflow_dispatch:       # Кнопка для ручного запуска в любой момент
+    - cron: '0 9 * * *' # Автоматический запуск 1 раз в сутки (в 12:00 по Москве)
+  workflow_dispatch:     # Ручной запуск по кнопке в любой момент
 
 permissions:
   contents: write
@@ -20,7 +20,9 @@ jobs:
         with:
           python-version: '3.11'
 
-      - name: Запускаем парсер цен
+      - name: Запускаем парсер цен через ScraperAPI
+        env:
+          SCRAPER_API_KEY: ${{ secrets.SCRAPER_API_KEY }}
         run: python parser.py
 
       - name: Сохраняем обновленный prices.json
@@ -28,4 +30,4 @@ jobs:
           git config --local user.email "action@github.com"
           git config --local user.name "Price Bot"
           git add prices.json
-          git diff --quiet && git diff --staged --quiet || (git commit -m "Автообновление цен" && git push)
+          git diff --quiet && git diff --staged --quiet || (git commit -m "Автообновление цен через API" && git push)
