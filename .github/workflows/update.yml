@@ -1,0 +1,31 @@
+name: Auto Update PC Prices
+
+on:
+  schedule:
+    - cron: '0 */6 * * *' # Автоматический запуск каждые 6 часов
+  workflow_dispatch:       # Кнопка для ручного запуска в любой момент
+
+permissions:
+  contents: write
+
+jobs:
+  update-prices:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Скачиваем файлы репозитория
+        uses: actions/checkout@v4
+
+      - name: Настраиваем Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Запускаем парсер цен
+        run: python parser.py
+
+      - name: Сохраняем обновленный prices.json
+        run: |
+          git config --local user.email "action@github.com"
+          git config --local user.name "Price Bot"
+          git add prices.json
+          git diff --quiet && git diff --staged --quiet || (git commit -m "Автообновление цен" && git push)
