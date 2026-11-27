@@ -17,7 +17,7 @@ def fetch_via_scraperapi(target_url):
         "api_key": API_KEY,
         "url": target_url
     }
-    api_url = f"https:{s}{s}://scraperapi.com{s}{q}" + urllib.parse.urlencode(params)
+    api_url = f"https:{s}{s}api.scraperapi.com{s}{q}" + urllib.parse.urlencode(params)
     req = urllib.request.Request(api_url)
     with urllib.request.urlopen(req, timeout=45) as response:
         return response.read().decode("utf-8", errors="ignore")
