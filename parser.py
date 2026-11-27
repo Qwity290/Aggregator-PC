@@ -1,138 +1,84 @@
-import json
-import time
-import os
-import re
-import urllib.parse
-import urllib.request
+import json, time, os, re, urllib.parse, urllib.request
 from datetime import datetime, timezone, timedelta
 from concurrent.futures import ThreadPoolExecutor
-from bs4 import BeautifulSoup
 
 API_KEY = os.environ.get("SCRAPER_API_KEY", "").strip()
+FLOORS = {
+    "5090": 190000, "5080": 115000, "5070": 62000, "4090": 165000,
+    "4080": 98000, "4070": 55000, "4060 ti": 36000, "4060": 29000,
+    "3060": 24000, "7900": 75000, "7800": 46000, "7600": 26000,
+    "9700x": 28000, "7800x3d": 25000, "7500f": 11000, "5700x3d": 18000,
+    "5600": 8500, "ddr5": 8500, "nvme": 6500, "ssd": 6500, "nv3": 6500
+}
 
-def fetch_via_scraperapi(target_url, render_js=False, encoding="utf-8"):
+def get_floor(word, ref):
+    w = word.lower()
+    for k, v in FLOORS.items():
+        if k in w:
+            return v
+    return max(int(ref * 0.7), 4000) if ref > 4000 else 4000
+
+def fetch_html(target_url, enc="utf-8"):
     if not API_KEY:
         return ""
-    params = {"api_key": API_KEY, "url": target_url, "country_code": "ru"}
-    if render_js:
-        params["render"] = "true"
-    api_url = "https://scraperapi.com?" + urllib.parse.urlencode(params)
-    req = urllib.request.Request(api_url)
-    with urllib.request.urlopen(req, timeout=60) as response:
-        return response.read().decode(encoding, errors="ignore")
+    s, q = chr(47), chr(63)
+    api = "https:" + s + s + "api." + "scraperapi.com" + s + q
+    qs = urllib.parse.urlencode({"api_key": API_KEY, "url": target_url, "country_code": "ru"})
+    with urllib.request.urlopen(urllib.request.Request(api + qs), timeout=35) as r:
+        return r.read().decode(enc, errors="ignore")
 
-def clean_int(text):
-    digits = re.sub(r"\D", "", text or "")
-    return int(digits) if digits else 0
-
-MIN_MARKET_FLOOR = {
-    "5090": 180000, "5080": 110000, "5070": 55000, "4090": 160000,
-    "4080": 95000, "4070": 48000, "4060": 26000, "3060": 22000,
-    "7900": 65000, "7800": 42000, "7700": 35000, "7600": 23000,
-    "9800x3d": 42000, "7800x3d": 25000, "7500f": 10500, "5700x3d": 16000,
-    "5600": 7500, "ddr5": 6500, "ssd": 3500
-}
-STOP_WORDS = ("кабель", "переходник", "райзер", "подставка", "коробка", "водоблок", "крепление")
-
-def get_min_floor(search_word, ref_price):
-    w = search_word.lower()
-    for key, floor in MIN_MARKET_FLOOR.items():
-        if key in w:
-            return floor
-    return max(int(ref_price * 0.7), 3000) if ref_price > 3000 else 3000
-
-def title_matches(title, search_word):
-    t = title.lower()
-    if any(bad in t for bad in STOP_WORDS):
-        return False
-    tokens = [tok.lower() for tok in search_word.split() if len(tok) >= 3]
-    hits = sum(1 for tok in tokens if tok in t)
-    return hits >= max(1, len(tokens) - 1)
-
-def extract_shop_prices(shop, html, search_word, floor):
-    soup = BeautifulSoup(html, "html.parser")
-    prices = []
-
-    if shop == "Онлайн Трейд":
-        for card in soup.select(".indexGoods__item")[:8]:
-            t = card.select_one(".indexGoods__item__name")
-            p = card.select_one(".price.regular, .price")
-            if t and p and title_matches(t.text, search_word):
-                val = clean_int(p.text)
-                if floor <= val <= 450000:
-                    prices.append(val)
-
-    elif shop == "DNS":
-        for card in soup.select(".catalog-product")[:8]:
-            t = card.select_one(".catalog-product__name")
-            p = card.select_one(".product-buy__price")
-            if t and p and title_matches(t.text, search_word):
-                val = clean_int(p.text.split("₽"))
-                if floor <= val <= 450000:
-                    prices.append(val)
-
+def parse_by_shop(shop, html, floor):
+    if shop == "DNS":
+        raw = re.findall(r'(?:product-buy__price|data-product-price)[^>]*>([\d\s\u00a0]+)', html)
+    elif shop == "Онлайн Трейд":
+        raw = re.findall(r'class="price(?:\s+regular)?"[^>]*>([\d\s\u00a0]+)\s*₽', html)
     elif shop == "Яндекс Маркет":
-        for card in soup.select("article[data-autotest-id='product-snippet'], [data-zone-name='productSnippet']")[:10]:
-            t = card.select_one("[data-auto='snippet-title'], h3")
-            p = card.select_one("[data-auto='snippet-price-current']")
-            if t and p and "×" not in p.text and "мес" not in p.text.lower():
-                if title_matches(t.text, search_word):
-                    val = clean_int(p.text)
-                    if floor <= val <= 450000:
-                        prices.append(val)
-
+        raw = re.findall(r'(?:snippet-price-current|"value"|"price")\s*[:=>"\s]+(\d{4,6})', html)
     elif shop == "Ozon":
-        root = soup.select_one("[data-widget='searchResultsV2']") or soup
-        for card in root.select("div[data-index]")[:10]:
-            lines = [s.strip() for s in card.stripped_strings]
-            title = next((x for x in lines if len(x) > 18 and "₽" not in x), "")
-            if not title_matches(title, search_word):
-                continue
-            for line in lines:
-                if "₽" in line and not line.startswith("+") and "мес" not in line.lower():
-                    val = clean_int(line)
-                    if floor <= val <= 450000:
-                        prices.append(val)
-                    break
-    return prices
-
-def check_shop_price(shop, search_word, ref_price=0):
-    enc = urllib.parse.quote(search_word)
-    urls = {
-        "DNS": (f"https://dns-shop.ru{enc}", True, "utf-8"),
-        "Ozon": (f"https://ozon.ru{enc}&from_global=true", True, "utf-8"),
-        "Яндекс Маркет": (f"https://yandex.ru{enc}", True, "utf-8"),
-        "Онлайн Трейд": (f"https://onlinetrade.ru{enc}", False, "windows-1251"),
+        raw = re.findall(r'(?:"finalPrice"|"price"|tsHeadline500Medium)[^>":]*[:>"]\s*([\d\s\u00a0]{4,8})', html)
+    else:
+        return []
+    nums = [int(re.sub(r"\D", "", x)) for x in raw if re.sub(r"\D", "", x)]
+    return [n for n in nums if floor <= n <= 450000]
+    
+def check_shop_price(shop, word, ref=0):
+    s, q = chr(47), chr(63)
+    enc = urllib.parse.quote(word)
+    routes = {
+        "DNS": ("https:" + s + s + "www.dns-shop.ru" + s + "search" + s + q + "q=" + enc, "utf-8"),
+        "Ozon": ("https:" + s + s + "www.ozon.ru" + s + "search" + s + q + "text=" + enc, "utf-8"),
+        "Яндекс Маркет": ("https:" + s + s + "market.yandex.ru" + s + "search" + q + "text=" + enc, "utf-8"),
+        "Онлайн Трейд": ("https:" + s + s + "www.onlinetrade.ru" + s + "sitesearch.html" + q + "query=" + enc, "windows-1251"),
     }
-    if shop not in urls:
+    if shop not in routes:
         return None, None
-    url, need_js, enc_type = urls[shop]
+    url, charset = routes[shop]
     try:
-        html = fetch_via_scraperapi(url, render_js=need_js, encoding=enc_type)
-        if not html or len(html) < 1500 or "smartcaptcha" in html.lower():
+        html = fetch_html(url, charset)
+        low = html.lower()
+        if len(html) < 1500 or "smartcaptcha" in low:
             return None, None
-        if "ничего не найдено" in html.lower() or "товаров не найдено" in html.lower():
+        if "ничего не найдено" in low or "товаров не найдено" in low:
             return 0, False
-        floor = get_min_floor(search_word, ref_price)
-        prices = extract_shop_prices(shop, html, search_word, floor)
+        prices = parse_by_shop(shop, html, get_floor(word, ref))
         if prices:
             return min(prices), True
     except Exception as e:
-        print(f"Ошибка {shop} ({search_word}): {e}")
+        print(f"Ошибка {shop} ({word}): {e}")
     return None, None
 
 def process_task(task):
-    shop, word, ref_price = task
+    shop, word, ref = task
     print(f"Проверяю {shop}: {word}...")
-    new_price, in_stock = check_shop_price(shop, word, ref_price)
-    time.sleep(1.5)
-    return (shop, word, new_price, in_stock)
+    res = check_shop_price(shop, word, ref)
+    time.sleep(1.2)
+    return (shop, word, res[0], res[1])
 
 def main():
     with open("prices.json", "r", encoding="utf-8") as f:
         data = json.load(f)
-    ref_map = {(i["shop"], i["searchWord"]): i["price"] for i in data["products"] if i["price"] > 0}
-    tasks = [(s, w, ref_map.get((s, w), 0)) for (s, w) in set((i["shop"], i["searchWord"]) for i in data["products"])]
+    refs = {(i["shop"], i["searchWord"]): i["price"] for i in data["products"] if i["price"] > 0}
+    tasks = [(s, w, refs.get((s, w), 0)) for (s, w) in set((i["shop"], i["searchWord"]) for i in data["products"])]
     cache = {}
     with ThreadPoolExecutor(max_workers=1) as ex:
         for shop, word, p, stock in ex.map(process_task, tasks):
