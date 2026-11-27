@@ -23,8 +23,8 @@ def fetch_html(target_url, enc="utf-8"):
         return ""
     s, q = chr(47), chr(63)
     api = "https:" + s + s + "api." + "scraperapi.com" + s + q
-    qs = urllib.parse.urlencode({"api_key": API_KEY, "url": target_url, "country_code": "ru"})
-    with urllib.request.urlopen(urllib.request.Request(api + qs), timeout=35) as r:
+    qs = urllib.parse.urlencode({"api_key": API_KEY, "url": target_url})
+    with urllib.request.urlopen(urllib.request.Request(api + qs), timeout=15) as r:
         return r.read().decode(enc, errors="ignore")
 
 def parse_by_shop(shop, html, floor):
@@ -40,7 +40,7 @@ def parse_by_shop(shop, html, floor):
         return []
     nums = [int(re.sub(r"\D", "", x)) for x in raw if re.sub(r"\D", "", x)]
     return [n for n in nums if floor <= n <= 450000]
-    
+
 def check_shop_price(shop, word, ref=0):
     s, q = chr(47), chr(63)
     enc = urllib.parse.quote(word)
@@ -64,15 +64,15 @@ def check_shop_price(shop, word, ref=0):
         if prices:
             return min(prices), True
     except Exception as e:
-        print(f"Ошибка {shop} ({word}): {e}")
+        print(f"Ошибка {shop} ({word}): {e}", flush=True)
     return None, None
 
 def process_task(task):
     shop, word, ref = task
-    print(f"Проверяю {shop}: {word}...")
-    res = check_shop_price(shop, word, ref)
-    time.sleep(1.2)
-    return (shop, word, res[0], res[1])
+    print(f"Проверяю {shop}: {word}...", flush=True)
+    p, stock = check_shop_price(shop, word, ref)
+    time.sleep(0.8)
+    return (shop, word, p, stock)
 
 def main():
     with open("prices.json", "r", encoding="utf-8") as f:
@@ -80,11 +80,11 @@ def main():
     refs = {(i["shop"], i["searchWord"]): i["price"] for i in data["products"] if i["price"] > 0}
     tasks = [(s, w, refs.get((s, w), 0)) for (s, w) in set((i["shop"], i["searchWord"]) for i in data["products"])]
     cache = {}
-    with ThreadPoolExecutor(max_workers=1) as ex:
+    with ThreadPoolExecutor(max_workers=2) as ex:
         for shop, word, p, stock in ex.map(process_task, tasks):
             cache[f"{shop}_{word}"] = (p, stock)
             if p is not None:
-                print(f" -> Успех {shop} ({word}): {p} ₽")
+                print(f" -> Успех {shop} ({word}): {p} ₽", flush=True)
     for item in data["products"]:
         p, stock = cache.get(f"{item['shop']}_{item['searchWord']}", (None, None))
         if p is not None:
