@@ -4,6 +4,7 @@ import re
 import urllib.parse
 import urllib.request
 from datetime import datetime, timezone, timedelta
+from concurrent.futures import ThreadPoolExecutor
 
 API_KEY = os.environ.get("SCRAPER_API_KEY", "").strip()
 
@@ -17,13 +18,13 @@ def fetch_via_scraperapi(target_url):
         "api_key": API_KEY,
         "url": target_url
     }
-    api_url = f"https:{s}{s}api.scraperapi.com{s}{q}" + urllib.parse.urlencode(params)
+    api_url = f"https:{s}{s}://scraperapi.com{s}{q}" + urllib.parse.urlencode(params)
     req = urllib.request.Request(api_url)
     with urllib.request.urlopen(req, timeout=20) as response:
         return response.read().decode("utf-8", errors="ignore")
 
-def check_shop_price(shop, search_word):
-    """Ищет минимальную цену и наличие товара в указанном магазине."""
+def check_shop_price(shop, search_word, ref_price=0):
+    """Ищет минимальную адекватную цену, отсекая пошлины, рассрочку и аксессуары."""
     encoded = urllib.parse.quote(search_word)
     s = chr(47)
     q = chr(63)
@@ -48,11 +49,16 @@ def check_shop_price(shop, search_word):
         if "ничего не найдено" in lower_html or "товаров не найдено" in lower_html:
             return 0, False
 
-        raw_prices = re.findall(r'(\d[\d\s\u00a0]{2,8})\s*₽', html)
+        min_threshold = int(ref_price * 0.65) if ref_price > 0 else 5000
+
+        matches = re.finditer(r'(\d[\d\s\u00a0]{2,8})\s*₽', html)
         valid_prices = []
-        for p in raw_prices:
-            clean_num = int(re.sub(r'\D', '', p))
-            if 3000 <= clean_num <= 450000:
+        for m in matches:
+            prefix = html[max(0, m.start() - 35):m.start()].lower()
+            if any(bad in prefix for bad in ["пошлина", "сплит", "мес", "×", "x", "скидка", "выгода"]):
+                continue
+            clean_num = int(re.sub(r'\D', '', m.group(1)))
+            if min_threshold <= clean_num <= 450000:
                 valid_prices.append(clean_num)
 
         if valid_prices:
@@ -63,19 +69,26 @@ def check_shop_price(shop, search_word):
 
     return None, None
 
-from concurrent.futures import ThreadPoolExecutor
-
 def process_task(task):
-    shop, word = task
+    shop, word, ref_price = task
     print(f"Проверяю {shop}: {word}...")
-    new_price, in_stock = check_shop_price(shop, word)
+    new_price, in_stock = check_shop_price(shop, word, ref_price)
     return (shop, word, new_price, in_stock)
 
 def main():
     with open("prices.json", "r", encoding="utf-8") as f:
         data = json.load(f)
 
-    unique_tasks = list(set((item["shop"], item["searchWord"]) for item in data["products"]))
+    ref_map = {}
+    for item in data["products"]:
+        k = (item["shop"], item["searchWord"])
+        if item["price"] > 0 and k not in ref_map:
+            ref_map[k] = item["price"]
+
+    unique_tasks = [
+        (shop, word, ref_map.get((shop, word), 0))
+        for (shop, word) in set((i["shop"], i["searchWord"]) for i in data["products"])
+    ]
     cache = {}
 
     with ThreadPoolExecutor(max_workers=5) as executor:
